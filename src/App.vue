@@ -1,35 +1,54 @@
 <template>
   <div id="app" class="container mt-5">
-<!--    <img alt="Vue logo" src="./assets/logo.png">-->
-<!--    <HelloWorld msg="Welcome to Your Vue.js App"/>-->
-<!--the above used for image display and the HomeWorld is the component -->
-  <h1>My Shop</h1>
-    <p class="animated fadeInRight">Take a tour at our offerings</p>
-  <font-awesome-icon icon="shopping-cart"></font-awesome-icon>
+    <h1>My Shop</h1>
+    <price-slider :sliderStatus="sliderStatus" :maximum.sync="maximum"></price-slider>
+    <product-list :maximum="maximum" :products="products" @add="addItem"></product-list>
   </div>
 </template>
 
 <script>
-
-// import HelloWorld from './components/HelloWorld.vue'
-//the above import helps on importing component upon components/HelloWorld.vue
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome"
+// import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import ProductList from "./components/ProductList.vue";
+import PriceSlider from "./components/PriceSlider.vue";
 export default {
-  name: 'App',
+  name: "app",
+  data: function() {
+    return {
+      maximum: 99,
+      sliderStatus: true,
+      cart: [],
+      products: null
+    };
+  },
+  methods: {
+    addItem: function(product) {
+      var whichProduct;
+      var existing = this.cart.filter(function(item, index) {
+        if (item.product.id == Number(product.id)) {
+          whichProduct = index;
+          return true;
+        } else {
+          return false;
+        }
+      });
+      if (existing.length) {
+        this.cart[whichProduct].qty++;
+      } else {
+        this.cart.push({ product: product, qty: 1 });
+      }
+    }
+  },
   components: {
-    // HelloWorld
-  FontAwesomeIcon
+    // FontAwesomeIcon,
+    ProductList,
+    PriceSlider
+  },
+  mounted: function() {
+    fetch("https://hplussport.com/api/products/order/price")
+        .then(response => response.json())
+        .then(data => {
+          this.products = data;
+        });
   }
-}
+};
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
